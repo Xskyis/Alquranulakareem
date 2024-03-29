@@ -1,113 +1,120 @@
+'use client'
+import useSWR from 'swr'
+import { Key, useEffect, useState } from 'react';
 import Image from "next/image";
+import Navbar from "@/components/navbar/navbar";
 
 export default function Home() {
+  const [surahNameData, setSurahNameData] = useState<any>([])
+  const [surahDetailData, setSurahDetailData] = useState<any>([])
+  const [surahNumber, setSurahNumber] = useState("1")
+
+  console.log('surahNameData', surahNameData);
+  console.log('surahDetailData', surahDetailData);
+
+  // fetch data from API
+  const { data, error } = useSWR('https://equran.id/api/surat', (url) => fetch(url).then(res => res.json()))
+
+  // Fetch data detail surah
+  const { data: detailData, error: detailError } = useSWR(`https://equran.id/api/surat/${surahNumber}`, (url) => fetch(url).then(res => res.json()))
+
+  const handleClick = (nomorSurah: string) => {
+    setSurahNumber(nomorSurah)
+  }
+
+  useEffect(() => {
+    if (data) {
+      setSurahNameData(data)
+    }
+  }, [data])
+
+  useEffect(() => {
+    if (detailData) {
+      setSurahDetailData(detailData.ayat)
+    }
+  }, [detailData])
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div className="container-fluid background-light p-5">
+      <Navbar />
+      <div className="main-content rounded-4 mt-2">
+        <div className="d-flex justify-content-center p-5 col-lg-12 row shadow-sm">
+          <div className="d-flex flex-column col-lg-3 gap-2" style={{ maxHeight: '100vh', overflowY: 'auto' }}>
+            {surahNameData.map((surah: any, index: Key | null | undefined) => (
+              <SurahCard
+                key={index}
+                nomor={surah?.nomor}
+                namaSurat={surah?.nama_latin}
+                arti={surah?.arti}
+                handleClick={handleClick}
+                surahNumber={surahNumber}
+              />
+            ))}
+          </div>
+          <div className="d-flex flex-column gap-2 col-lg-8" style={{ maxHeight: '100vh', overflowY: 'auto' }}>
+            {surahDetailData.map((surah: any, index: Key | null | undefined) => (
+              <SurahDetailCard
+                key={index}
+                nomorSurah={surah?.surah}
+                ayat={surah?.nomor}
+                ar={surah?.ar}
+                tr={surah?.tr}
+                id={surah?.idn}
+              />
+            ))}
+          </div>
         </div>
       </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+    </div>
   );
+}
+
+// Surah Card Props
+type SurahCardProps = {
+  nomor: string,
+  namaSurat: string,
+  arti: string
+  surahNumber: string,
+  handleClick: (nomorSurah: string) => void
+}
+
+const SurahCard = ({ nomor, namaSurat, arti, handleClick, surahNumber }: SurahCardProps) => {
+  return (
+    <div className={`card border-3 ${surahNumber === nomor ? 'shadow-lg' : 'shadow-sm'} ${surahNumber === nomor ? 'border-success' : 'border-none'}`} style={{ width: '14rem' }} onClick={() => handleClick(nomor)}>
+      <div className="card-body">
+        <div className="d-flex">
+          <p className="surah-number bg-success bg-gradient">{nomor}</p>
+          <h6 className="card-title"><strong>{namaSurat}</strong></h6>
+        </div>
+        <h6 className="card-subtitle text-body-secondary text-uppercase" style={{ paddingLeft: '41px', fontSize: '13px' }}>{arti}</h6>
+      </div>
+    </div>
+  )
+}
+
+// Surah Detail Card Props
+type SurahDetailCardProps = {
+  nomorSurah: number,
+  ayat: number,
+  ar: any,
+  tr: string,
+  id: string
+}
+
+const SurahDetailCard = ({ nomorSurah, ayat, ar, tr, id }: SurahDetailCardProps) => {
+  return (
+    <div className="card shadow border border-none" style={{ width: '100%' }}>
+      <div className="card-body p-4">
+        <div className="d-flex justify-content-between mb-3">
+          <span className="badge text-bg-success h-25 me-5 shadow-sm">{nomorSurah} : {ayat}</span>
+          <h5 className="card-title"><strong>{ar}</strong></h5>
+        </div>
+        <h6 className="card-subtitle text-body-success mb-3" style={{ paddingLeft: '35px', fontSize: '13px' }}>{tr}</h6>
+        <h6 className="card-subtitle text-body-secondary" style={{ paddingLeft: '35px', fontSize: '13px' }}>
+          {id}
+        </h6>
+        <hr />
+      </div>
+    </div>
+  )
 }
